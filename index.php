@@ -2,7 +2,8 @@
 
 declare(strict_types=1);
 
-// Точка входа текущего этапа: проверяет подключение и готовность базы данных.
+// Точка входа: настраивает базу и выводит главную страницу с данными из MySQL.
+use App\Controller\HomeController;
 use App\Controller\SetupController;
 use App\Core\Database;
 use App\Core\TemplateRenderer;
@@ -10,10 +11,10 @@ use App\Infrastructure\ConfigRepository;
 use App\Infrastructure\DatabaseSeeder;
 use App\Infrastructure\Installer;
 use App\Infrastructure\SchemaManager;
+use App\Repository\HomeRepository;
 
 require __DIR__ . '/vendor/autoload.php';
 
-// Подготавливаем компоненты, необходимые только для настройки базы.
 $configRepository = new ConfigRepository(__DIR__ . '/config.php');
 $templates = new TemplateRenderer(__DIR__ . '/templates', __DIR__ . '/storage/smarty');
 $installer = new Installer(new SchemaManager(), new DatabaseSeeder());
@@ -42,5 +43,5 @@ try {
 }
 
 // ок
-$templates->render('pages/database-ready.tpl', ['title' => 'База данных подключена']);
-
+$homeController = new HomeController(new HomeRepository($pdo), $templates);
+$homeController->show();
