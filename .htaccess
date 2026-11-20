@@ -1,0 +1,7 @@
+Options -Indexes
+RewriteEngine On
+RewriteRule ^(vendor)/ - [F,L,NC]
+<FilesMatch "^(composer\.(json|lock))$">
+    Require all denied
+</FilesMatch>
+    
