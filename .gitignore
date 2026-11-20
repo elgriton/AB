@@ -1,3 +1,8 @@
 # зависимости композер востанавливаются с помощью `composer install`.
 /vendor/
 /config.php
+/storage/smarty/compiled/*
+/storage/smarty/cache/*
+/storage/logs/*
+*.log
+/error_log
