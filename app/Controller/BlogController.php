@@ -44,6 +44,11 @@ final class BlogController
         unset($section);
         $this->templates->render('pages/home.tpl', [
             'title' => 'Главная',
+            'metaTitle' => 'Easy recipes for every day',
+            'metaDescription' => 'Tested recipes, seasonal ingredients, and ideas for delicious home cooking.',
+            'canonicalUrl' => $this->absoluteUrl('/index.php'),
+            'ogType' => 'website',
+            'ogImageUrl' => $this->absoluteUrl('/assets/images/food.svg'),
             'navigation' => $navigation,
             'sections' => $sections,
         ]);
@@ -72,7 +77,10 @@ final class BlogController
         ));
 
         $pagination = [];
-        for ($number = 1; $number <= $pages; $number++) {
+        $firstPage = max(1, min($page - 2, $pages - 4));
+        $lastPage = min($pages, $firstPage + 4);
+
+        for ($number = $firstPage; $number <= $lastPage; $number++) {
             $pagination[] = [
                 'number' => $number,
                 'current' => $number === $page,
@@ -80,8 +88,27 @@ final class BlogController
             ];
         }
 
+        $previousPageUrl = '?' . http_build_query([
+            'category' => $category['slug'],
+            'sort' => $sort,
+            'page' => max(1, $page - 1),
+        ]);
+        $nextPageUrl = '?' . http_build_query([
+            'category' => $category['slug'],
+            'sort' => $sort,
+            'page' => min($pages, $page + 1),
+        ]);
+
         $this->templates->render('pages/category.tpl', [
             'title' => $category['name'],
+            'metaTitle' => $category['name'] . ' recipes',
+            'metaDescription' => mb_substr((string) $category['description'], 0, 155),
+            'canonicalUrl' => $this->absoluteUrl('/index.php?' . http_build_query(array_filter([
+                'category' => $category['slug'],
+                'page' => $page > 1 ? $page : null,
+            ]))),
+            'ogType' => 'website',
+            'ogImageUrl' => $this->absoluteUrl('/assets/images/food.svg'),
             'navigation' => $navigation,
             'category' => $category,
             'posts' => $posts,
@@ -90,6 +117,8 @@ final class BlogController
             'page' => $page,
             'pages' => $pages,
             'pagination' => $pagination,
+            'previousPageUrl' => $previousPageUrl,
+            'nextPageUrl' => $nextPageUrl,
             'hasMultiplePages' => $pages > 1,
             'hasPosts' => $total > 0,
         ]);
@@ -112,6 +141,11 @@ final class BlogController
 
         $this->templates->render('pages/post.tpl', [
             'title' => $post['title'],
+            'metaTitle' => $post['title'],
+            'metaDescription' => mb_substr((string) $post['excerpt'], 0, 155),
+            'canonicalUrl' => $this->absoluteUrl('/index.php?post=' . rawurlencode($post['slug'])),
+            'ogType' => 'article',
+            'ogImageUrl' => $post['imageUrl'] !== '' ? $this->absoluteUrl($post['imageUrl']) : '',
             'navigation' => $navigation,
             'post' => $post,
             'similarPosts' => $similar,
@@ -145,6 +179,18 @@ final class BlogController
             return $image;
         }
         return '';
+    }
+
+    /** Собирает абсолютный адрес страницы для canonical и Open Graph. */
+    private function absoluteUrl(string $path): string
+    {
+        if (preg_match('#^https?://#i', $path)) {
+            return $path;
+        }
+        $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+        $scheme = $https ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        return $scheme . '://' . $host . $path;
     }
 }
 

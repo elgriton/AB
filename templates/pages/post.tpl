@@ -1,61 +1,57 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{$title} — Pinch of Flavor</title>
-</head>
-<body>
-    <header>
-        <p><a href="index.php">Pinch of Flavor</a></p>
-        <p>
-            {if $post.categories}
-                <a href="?category={$post.categories[0].slug}">← {$post.categories[0].name}</a>
-            {else}
-                <a href="index.php">← Home</a>
-            {/if}
-        </p>
+{extends file="layouts/main.tpl"}
 
-        <nav aria-label="Recipe categories">
-            {foreach $post.categories as $category}
-                <a href="?category={$category.slug}">{$category.name}</a>
-            {/foreach}
-        </nav>
+{block name=content}
+    <article class="article-page">
+        <a class="back-link" href="{if $post.categories}?category={$post.categories[0].slug}{else}index.php{/if}">
+            ← {if $post.categories}{$post.categories[0].name}{else}Home{/if}
+        </a>
 
-        <h1>{$post.title}</h1>
-        <p>{$post.excerpt}</p>
-        <p>
-            Published:
-            <time datetime="{$post.published_at}">{$post.publishedLabel}</time>
-            · Views: {$post.views}
-        </p>
-    </header>
-
-    <main>
-        <article>
-            <h2>Recipe</h2>
-            <p>{$post.body}</p>
-
-            {if $post.tags}
-                <footer>
-                    <h2>Tags</h2>
-                    <ul>
-                        {foreach $post.tags as $tag}
-                            <li>#{$tag.name}</li>
-                        {/foreach}
-                    </ul>
-                </footer>
-            {/if}
-        </article>
-
-        {if $similarPosts}
-            <section aria-labelledby="related-title">
-                <h2 id="related-title">Related recipes</h2>
-                {foreach $similarPosts as $post}
-                    {include file="partials/post-summary.tpl" post=$post}
+        <header class="article-heading">
+            <div class="article-categories">
+                {foreach $post.categories as $category}
+                    <a href="?category={$category.slug}">{$category.name}</a>
                 {/foreach}
-            </section>
+            </div>
+
+            <h1>{$post.title}</h1>
+            <p class="article-lead">{$post.excerpt}</p>
+            <div class="article-meta">
+                <time datetime="{$post.published_at|replace:' ':'T'}">{$post.publishedLabel}</time>
+                <span>Views: {$post.views}</span>
+            </div>
+        </header>
+
+        {if $post.imageUrl}
+            <figure class="article-cover">
+                <img src="{$post.imageUrl}" alt="{$post.title|escape:'html'}">
+            </figure>
         {/if}
-    </main>
-</body>
-</html>
+
+        <div class="article-body">{$post.body}</div>
+
+        {if $post.tags}
+            <div class="tag-list">
+                {foreach $post.tags as $tag}
+                    <span>#{$tag.name}</span>
+                {/foreach}
+            </div>
+        {/if}
+    </article>
+
+    {if $similarPosts}
+        <section class="similar-section">
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow">MORE IDEAS FOR YOUR MENU</span>
+                    <h2>Related recipes</h2>
+                </div>
+            </div>
+
+            <div class="post-grid">
+                {foreach $similarPosts as $similar}
+                    {include file="partials/post-card.tpl" post=$similar headingLevel=3}
+                {/foreach}
+            </div>
+        </section>
+    {/if}
+{/block}

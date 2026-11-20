@@ -3,7 +3,7 @@
     <p>{$post.excerpt}</p>
     <p>
         Published:
-        <time datetime="{$post.published_at}">{$post.publishedLabel}</time>
+        <time datetime="{$post.published_at|replace:' ':'T'}">{$post.publishedLabel}</time>
         · Views: {$post.views}
     </p>
 </article>

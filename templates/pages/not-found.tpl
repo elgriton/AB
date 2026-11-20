@@ -1,15 +1,10 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{$title} — Pinch of Flavor</title>
-</head>
-<body>
-    <main>
+{extends file="layouts/main.tpl"}
+
+{block name=content}
+    <section class="empty-state not-found">
+        <span class="eyebrow">404</span>
         <h1>Page not found</h1>
-        <p>The requested recipe or category does not exist.</p>
-        <p><a href="index.php">Back to home</a></p>
-    </main>
-</body>
-</html>
+        <p>This page may have been moved or may not exist.</p>
+        <a class="button" href="index.php">Back to home</a>
+    </section>
+{/block}

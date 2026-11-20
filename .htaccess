@@ -1,5 +1,6 @@
 Options -Indexes
 RewriteEngine On
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
 RewriteRule ^(vendor)/ - [F,L,NC]
 <FilesMatch "^(composer\.(json|lock))$">
     Require all denied
