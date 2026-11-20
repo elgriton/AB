@@ -30,15 +30,7 @@
 
             {if $posts}
                 {foreach $posts as $post}
-                    <article>
-                        <h3>{$post.title}</h3>
-                        <p>{$post.excerpt}</p>
-                        <p>
-                            Published:
-                            <time datetime="{$post.published_at}">{$post.publishedLabel}</time>
-                            · Views: {$post.views}
-                        </p>
-                    </article>
+                    {include file="partials/post-summary.tpl" post=$post}
                 {/foreach}
             {else}
                 <p>There are no recipes in this category yet.</p>

@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-// Точка входа: настраивает базу и выводит главную страницу с данными из MySQL.
-use App\Controller\CategoryController;
-use App\Controller\HomeController;
+// Точка входа: проверяет базу и передаёт запрос общему контроллеру страниц.
+use App\Controller\BlogController;
 use App\Controller\SetupController;
 use App\Core\Database;
 use App\Core\TemplateRenderer;
@@ -12,8 +11,7 @@ use App\Infrastructure\ConfigRepository;
 use App\Infrastructure\DatabaseSeeder;
 use App\Infrastructure\Installer;
 use App\Infrastructure\SchemaManager;
-use App\Repository\CategoryRepository;
-use App\Repository\HomeRepository;
+use App\Repository\BlogRepository;
 
 require __DIR__ . '/vendor/autoload.php';
 
@@ -44,12 +42,6 @@ try {
     exit;
 }
 
-// ок
-if (isset($_GET['category']) && is_string($_GET['category'])) {
-    $categoryController = new CategoryController(new CategoryRepository($pdo), $templates);
-    $categoryController->show($_GET['category'], $_GET);
-    exit;
-}
-
-$homeController = new HomeController(new HomeRepository($pdo), $templates);
-$homeController->show();
+$blog = new BlogRepository($pdo);
+$controller = new BlogController($blog, $templates);
+$controller->dispatch($_GET);

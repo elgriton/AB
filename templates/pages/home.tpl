@@ -21,21 +21,9 @@
                         <p>{$section.description}</p>
                     </header>
 
-                    {if $section.posts}
-                        {foreach $section.posts as $post}
-                            <article>
-                                <h3>{$post.title}</h3>
-                                <p>{$post.excerpt}</p>
-                                <p>
-                                    Published:
-                                    <time datetime="{$post.published_at}">{$post.publishedLabel}</time>
-                                    · Views: {$post.views}
-                                </p>
-                            </article>
-                        {/foreach}
-                    {else}
-                        <p>No recipes in this category yet.</p>
-                    {/if}
+                    {foreach $section.posts as $post}
+                        {include file="partials/post-summary.tpl" post=$post}
+                    {/foreach}
                 </section>
             {/foreach}
         {else}
