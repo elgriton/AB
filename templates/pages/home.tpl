@@ -17,9 +17,8 @@
             {foreach $sections as $section}
                 <section>
                     <header>
-                        <h2>{$section.name}</h2>
+                        <h2><a href="?category={$section.slug}">{$section.name}</a></h2>
                         <p>{$section.description}</p>
-                        <p><small>Category slug: {$section.slug}</small></p>
                     </header>
 
                     {if $section.posts}

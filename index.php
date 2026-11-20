@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 // Точка входа: настраивает базу и выводит главную страницу с данными из MySQL.
+use App\Controller\CategoryController;
 use App\Controller\HomeController;
 use App\Controller\SetupController;
 use App\Core\Database;
@@ -11,6 +12,7 @@ use App\Infrastructure\ConfigRepository;
 use App\Infrastructure\DatabaseSeeder;
 use App\Infrastructure\Installer;
 use App\Infrastructure\SchemaManager;
+use App\Repository\CategoryRepository;
 use App\Repository\HomeRepository;
 
 require __DIR__ . '/vendor/autoload.php';
@@ -43,5 +45,11 @@ try {
 }
 
 // ок
+if (isset($_GET['category']) && is_string($_GET['category'])) {
+    $categoryController = new CategoryController(new CategoryRepository($pdo), $templates);
+    $categoryController->show($_GET['category'], $_GET);
+    exit;
+}
+
 $homeController = new HomeController(new HomeRepository($pdo), $templates);
 $homeController->show();
