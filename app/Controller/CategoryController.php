@@ -10,15 +10,27 @@ use App\Repository\CategoryRepository;
 /** Загружает данные рубрики и отображает список её статей. */
 final class CategoryController
 {
+    /** Максимум статей на одной странице рубрики. */
     private const PAGE_SIZE = 6;
 
+    /**
+     * Создаёт контроллер рубрик.
+     * @param CategoryRepository $categories Репозиторий рубрик.
+     * @param TemplateRenderer $templates Рендерер шаблонов.
+     */
     public function __construct(
         private readonly CategoryRepository $categories,
         private readonly TemplateRenderer $templates,
     ) {
     }
 
-    /** Проверяет рубрику, применяет сортировку и готовит пагинацию. */
+    /**
+     * Загружает страницу рубрики с сортировкой и пагинацией.
+     * @param string $slug Slug запрошенной рубрики.
+     * @param array<string,mixed> $query GET-параметры запроса.
+     * @return void
+     * @throws \PDOException При ошибке чтения данных.
+     */
     public function show(string $slug, array $query): void
     {
         $category = $this->categories->findBySlug($slug);

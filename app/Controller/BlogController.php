@@ -10,16 +10,26 @@ use App\Repository\BlogRepository;
 /** Обрабатывает запросы главной страницы, рубрик и отдельных статей. */
 final class BlogController
 {
-    // Число статей на одной странице рубрики.
+    /** Максимум статей, выводимых на одной странице рубрики. */
     private const PAGE_SIZE = 6;
 
+    /**
+     * Создаёт контроллер блога.
+     * @param BlogRepository $blog Репозиторий данных блога.
+     * @param TemplateRenderer $templates Рендерер страниц.
+     */
     public function __construct(
         private readonly BlogRepository $blog,
         private readonly TemplateRenderer $templates,
     ) {
     }
 
-    /** Выбирает страницу по GET-параметрам и получает общие данные навигации. */
+    /**
+     * Направляет запрос на главную, рубрику или страницу статьи.
+     * @param array<string,mixed> $query GET-параметры текущего запроса.
+     * @return void
+     * @throws \PDOException Если репозиторий не может получить данные.
+     */
     public function dispatch(array $query): void
     {
         $navigation = $this->blog->navigationCategories();
@@ -34,7 +44,11 @@ final class BlogController
         $this->showHome($navigation);
     }
 
-    /** Строит блоки главной: каждая рубрика и три последних статьи в ней. */
+    /**
+     * Формирует данные главной страницы и выводит шаблон.
+     * @param list<array> $navigation Рубрики для меню.
+     * @return void
+     */
     private function showHome(array $navigation): void
     {
         $sections = $this->blog->homeCategories();
@@ -54,7 +68,14 @@ final class BlogController
         ]);
     }
 
-    /** Проверяет рубрику, применяет сортировку и рассчитывает данные пагинации. */
+    /**
+     * Загружает рубрику, страницу статей и данные навигации по страницам.
+     * @param string $slug Slug рубрики.
+     * @param array<string,mixed> $query GET-параметры сортировки и номера страницы.
+     * @param list<array> $navigation Рубрики для меню.
+     * @return void
+     * @throws \PDOException При ошибке чтения из базы.
+     */
     private function showCategory(string $slug, array $query, array $navigation): void
     {
         $category = $this->blog->findCategory($slug);
@@ -124,7 +145,13 @@ final class BlogController
         ]);
     }
 
-    /** Загружает статью, увеличивает просмотры и подбирает похожие публикации. */
+    /**
+     * Выводит статью, увеличив её счётчик просмотров и загрузив похожие публикации.
+     * @param string $slug Slug статьи.
+     * @param list<array> $navigation Рубрики для меню.
+     * @return void
+     * @throws \PDOException При ошибке чтения или обновления базы.
+     */
     private function showPost(string $slug, array $navigation): void
     {
         $post = $this->blog->findPost($slug);
@@ -152,6 +179,11 @@ final class BlogController
         ]);
     }
 
+    /**
+     * Отображает страницу 404.
+     * @param list<array> $navigation Рубрики для меню.
+     * @return void
+     */
     private function notFound(array $navigation): void
     {
         http_response_code(404);
@@ -161,6 +193,11 @@ final class BlogController
         ]);
     }
 
+    /**
+     * Добавляет статьям форматированную дату и безопасный URL изображения.
+     * @param list<array> $posts Статьи, содержащие дату и путь к изображению.
+     * @return list<array> Обогащённые данные статей.
+     */
     private function decoratePosts(array $posts): array
     {
         foreach ($posts as &$post) {
@@ -171,7 +208,11 @@ final class BlogController
         return $posts;
     }
 
-    /** Разрешает только безопасные веб-адреса и пути к изображениям из проекта. */
+    /**
+     * Проверяет адрес изображения и возвращает его либо пустую строку.
+     * @param string $image Исходный URL или путь из данных статьи.
+     * @return string Безопасный URL/путь либо пустая строка.
+     */
     private function safeImageUrl(string $image): string
     {
         $image = trim($image);
@@ -181,7 +222,11 @@ final class BlogController
         return '';
     }
 
-    /** Собирает абсолютный адрес страницы для canonical и Open Graph. */
+    /**
+     * Формирует абсолютный URL на основе схемы и хоста текущего запроса.
+     * @param string $path Абсолютный путь с query-параметрами.
+     * @return string Абсолютный URL.
+     */
     private function absoluteUrl(string $path): string
     {
         if (preg_match('#^https?://#i', $path)) {

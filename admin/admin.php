@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-// Дополнительная локальная админка: редактирование публикаций и добавление рубрик.
+/** Локальная административная страница управления статьями и рубриками. */
 
 session_set_cookie_params([
     'httponly' => true,
@@ -23,11 +23,20 @@ $pdo = new PDO(
     [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, PDO::ATTR_EMULATE_PREPARES => false]
 );
 
+/**
+ * Экранирует строку перед выводом в HTML.
+ * @param string $value Исходное значение.
+ * @return string HTML-безопасное представление строки.
+ */
 function h(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+/**
+ * Возвращает CSRF-токен текущей сессии, создавая его при необходимости.
+ * @return string Токен формы в шестнадцатеричном виде.
+ */
 function csrfToken(): string
 {
     if (empty($_SESSION['csrf'])) {
@@ -36,7 +45,7 @@ function csrfToken(): string
     return $_SESSION['csrf'];
 }
 
-// Проверяет токен формы, чтобы другой сайт не мог незаметно отправить команду сохранения или удаления.
+/** Проверяет CSRF-токен POST-запроса и завершает запрос с HTTP 400 при несовпадении. */
 function verifyCsrf(): void
 {
     if (!hash_equals((string) ($_SESSION['csrf'] ?? ''), (string) ($_POST['csrf'] ?? ''))) {
@@ -45,6 +54,11 @@ function verifyCsrf(): void
     }
 }
 
+/**
+ * Преобразует текст в URL-slug; если после транслитерации текст пуст, генерирует уникальный запасной slug.
+ * @param string $value Текст для преобразования.
+ * @return string Slug из латинских букв, цифр и дефисов.
+ */
 function makeSlug(string $value): string
 {
     $ascii = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
@@ -62,12 +76,11 @@ if (isset($_GET['saved'])) {
     $message = 'Рубрика добавлена.';
 }
 
-// Обрабатываем отправленные формы: создание рубрики, сохранение статьи или её удаление.
+/** Обрабатывает POST-действие: сохранение рубрики или статьи либо удаление статьи. */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrf();
     $action = (string) ($_POST['action'] ?? '');
 
-    // Создание новой рубрики; адрес формируется из введённого slug или названия.
     if ($action === 'save_category') {
         $name = trim((string) ($_POST['name'] ?? ''));
         $description = trim((string) ($_POST['description'] ?? ''));
@@ -84,7 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = 'Не удалось добавить рубрику. Возможно, такой адрес уже используется.';
             }
         }
-    // Сохраняем поля статьи и обновляем её связи с рубриками и тегами.
     } elseif ($action === 'save_post') {
         $id = (int) ($_POST['id'] ?? 0);
         $title = trim((string) ($_POST['title'] ?? ''));
@@ -102,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             try {
                 $publishedAt = (new DateTimeImmutable($publishedInput))->format('Y-m-d H:i:s');
-                // Статья и связи сохраняются атомарно: при ошибке изменения будут отменены.
+                /** Открываем транзакцию для атомарного сохранения статьи и связей. */
                 $pdo->beginTransaction();
                 if ($id > 0) {
                     $statement = $pdo->prepare('UPDATE posts SET title = ?, slug = ?, excerpt = ?, body = ?, image = ?, views = ?, published_at = ? WHERE id = ?');
@@ -158,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// По умолчанию показываем список статей; остальные экраны выбираются query-параметрами.
+/** Выбираем экран админки по query-параметрам, по умолчанию показываем список статей. */
 $page = (string) ($_GET['page'] ?? 'posts');
 $showCategories = $page === 'categories';
 $editId = (int) ($_GET['edit'] ?? 0);

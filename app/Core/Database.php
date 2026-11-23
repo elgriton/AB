@@ -6,10 +6,17 @@ namespace App\Core;
 
 use PDO;
 
-// Подключаемся к базе. Имя базы добавляется в только по запросу.
+/** Создаёт PDO-подключение к серверу MySQL или конкретной базе данных. */
 final class Database
 {
-    
+    /**
+     * Открывает соединение с MySQL.
+     *
+     * @param array{host:string,port:int|string,database?:string,username:string,password:string} $config Параметры подключения.
+     * @param bool $selectDatabase Нужно ли выбрать базу данных в DSN.
+     * @return PDO Открытое PDO-соединение.
+     * @throws \PDOException Если соединение установить не удалось.
+     */
     public static function connect(array $config, bool $selectDatabase = true): PDO
     {
         $dsn = sprintf('mysql:host=%s;port=%d;charset=utf8mb4', $config['host'], (int) $config['port']);

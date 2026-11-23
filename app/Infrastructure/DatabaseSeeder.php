@@ -8,7 +8,13 @@ use PDO;
 /** Заполняет пустую базу демонстрационными рубриками, статьями и тегами. */
 final class DatabaseSeeder
 {
-    /** заполняем данными */
+    /**
+     * Добавляет демонстрационные данные, только если таблица статей пуста.
+     * Все записи и связи сохраняются транзакционно.
+     * @param PDO $pdo Соединение с подготовленной базой данных.
+     * @return int Число добавленных статей; ноль, если база уже содержит статьи.
+     * @throws \PDOException При ошибке вставки; транзакция откатывается.
+     */
     public function seedIfEmpty(PDO $pdo): int
     {
         if ((int) $pdo->query('SELECT COUNT(*) FROM posts')->fetchColumn() > 0) {
@@ -283,10 +289,10 @@ final class DatabaseSeeder
             ],
         ];
 
-        // Связи и записи добавляются одной транзакцией, чтобы при ошибке не оставить неполный набор данных.
+        /** Начальные записи и их связи фиксируются одной транзакцией. */
         $pdo->beginTransaction();
         try {
-            // заполняем рубрику 
+            /** Сначала создаём рубрики, чтобы получить их идентификаторы для связей. */
             $categoryInsert = $pdo->prepare('INSERT IGNORE INTO categories (slug, name, description) VALUES (?, ?, ?)');
             foreach ($categories as [$slug, $name, $description]) {
                 $categoryInsert->execute([$slug, $name, $description]);
@@ -294,7 +300,7 @@ final class DatabaseSeeder
 
 
 
-            // заполняем посты
+            /** Добавляем статьи и сохраняем связи с рубриками и тегами. */
             $categoryIds = $pdo->query('SELECT slug, id FROM categories')->fetchAll(PDO::FETCH_KEY_PAIR);
             $postInsert = $pdo->prepare('INSERT INTO posts (slug, title, excerpt, body, image, views, published_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
             $categoryLink = $pdo->prepare('INSERT IGNORE INTO post_categories (post_id, category_id) VALUES (?, ?)');
@@ -305,13 +311,13 @@ final class DatabaseSeeder
             foreach ($posts as $index => [$slug, $title, $excerpt, $body, $image, $categorySlug, $tagSlugs, $publishedAt]) {
                 $postInsert->execute([$slug, $title, $excerpt, $body, $image, ($index + 1) * 17, $publishedAt]);  //  ($index + 1) * 17 - просмотры
                 $postId = (int) $pdo->lastInsertId();
-                // подключаем к рубрике
+                /** Связываем статью с её рубрикой. */
                 $categoryLink->execute([$postId, $categoryIds[$categorySlug]]);
                 foreach ($tagSlugs as $tagSlug) {
                     $tagName = ucfirst(str_replace('-', ' ', $tagSlug));
                     $tagInsert->execute([$tagSlug, $tagName]);
                     $tagLookup->execute([$tagSlug]);
-                    // подключем теги
+                    /** Создаём или находим тег и связываем его со статьёй. */
                     $tagLink->execute([$postId, (int) $tagLookup->fetchColumn()]);
                 }
             }
@@ -319,7 +325,7 @@ final class DatabaseSeeder
             $pdo->commit();
             return count($posts);
         } catch (\Throwable $exception) {
-            // откатываем  
+            /** При ошибке отменяем все изменения текущей транзакции. */
             $pdo->rollBack();
             throw $exception;
         }

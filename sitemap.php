@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Core\Database;
 use App\Infrastructure\ConfigRepository;
 
+/** Формирует XML-карту сайта из существующих рубрик и статей базы. */
 require __DIR__ . '/vendor/autoload.php';
 
 header('Content-Type: application/xml; charset=utf-8');

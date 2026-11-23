@@ -9,16 +9,30 @@ use PDO;
 /** Содержит SQL-запросы, которыми контроллер получает данные блога. */
 final class BlogRepository
 {
+    /**
+     * Создаёт репозиторий блога.
+     *
+     * @param PDO $pdo Соединение с базой данных.
+     */
     public function __construct(private readonly PDO $pdo)
     {
     }
 
+    /**
+     * Возвращает список рубрик для навигационного меню.
+     * @return list<array{id:int|string,name:string,slug:string}> Рубрики меню.
+     * @throws \PDOException При ошибке запроса.
+     */
     public function navigationCategories(): array
     {
         return $this->pdo->query('SELECT id, name, slug FROM categories ORDER BY name')->fetchAll();
     }
 
-    /** Возвращает рубрики с тремя самыми свежими статьями в каждой. */
+    /**
+     * Возвращает непустые рубрики и три последние статьи каждой.
+     * @return list<array> Рубрики с вложенным списком статей.
+     * @throws \PDOException При ошибке запроса.
+     */
     public function homeCategories(): array
     {
         $categories = $this->pdo->query('SELECT c.id, c.name, c.slug, c.description FROM categories c WHERE EXISTS (SELECT 1 FROM post_categories pc WHERE pc.category_id = c.id) ORDER BY c.name')->fetchAll();
@@ -32,6 +46,12 @@ final class BlogRepository
         return $categories;
     }
 
+    /**
+     * Находит рубрику по slug.
+     * @param string $slug Адресный идентификатор рубрики.
+     * @return array|null Данные рубрики или null.
+     * @throws \PDOException При ошибке запроса.
+     */
     public function findCategory(string $slug): ?array
     {
         $statement = $this->pdo->prepare('SELECT id, name, slug, description FROM categories WHERE slug = ? LIMIT 1');
@@ -39,6 +59,12 @@ final class BlogRepository
         return $statement->fetch() ?: null;
     }
 
+    /**
+     * Считает статьи рубрики.
+     * @param int $categoryId Идентификатор рубрики.
+     * @return int Количество статей.
+     * @throws \PDOException При ошибке запроса.
+     */
     public function countCategoryPosts(int $categoryId): int
     {
         $statement = $this->pdo->prepare('SELECT COUNT(DISTINCT post_id) FROM post_categories WHERE category_id = ?');
@@ -46,7 +72,15 @@ final class BlogRepository
         return (int) $statement->fetchColumn();
     }
 
-    /** Выбирает страницу статей; порядок сортировки ограничен двумя разрешёнными вариантами. */
+    /**
+     * Выбирает одну страницу статей рубрики.
+     * @param int $categoryId Идентификатор рубрики.
+     * @param string $sort `views` для популярности, иначе дата публикации.
+     * @param int $limit Максимум строк.
+     * @param int $offset Число пропускаемых строк.
+     * @return list<array> Найденные статьи.
+     * @throws \PDOException При ошибке запроса.
+     */
     public function categoryPosts(int $categoryId, string $sort, int $limit, int $offset): array
     {
         $orderBy = $sort === 'views'
@@ -60,6 +94,12 @@ final class BlogRepository
         return $statement->fetchAll();
     }
 
+    /**
+     * Загружает статью вместе с её рубриками и тегами.
+     * @param string $slug Адресный идентификатор статьи.
+     * @return array|null Статья с рубриками и тегами или null.
+     * @throws \PDOException При ошибке запроса.
+     */
     public function findPost(string $slug): ?array
     {
         $statement = $this->pdo->prepare('SELECT id, title, slug, excerpt, body, image, views, published_at FROM posts WHERE slug = ? LIMIT 1');
@@ -78,14 +118,24 @@ final class BlogRepository
         return $post;
     }
 
-    /** Атомарно увеличивает счётчик просмотров выбранной статьи. */
+    /**
+     * Атомарно увеличивает счётчик просмотров статьи на единицу.
+     * @param int $postId Идентификатор статьи.
+     * @return void
+     * @throws \PDOException При ошибке обновления.
+     */
     public function incrementViews(int $postId): void
     {
         $statement = $this->pdo->prepare('UPDATE posts SET views = views + 1 WHERE id = ?');
         $statement->execute([$postId]);
     }
 
-    /** Ищет статьи по общим тегам, а при пустом наборе тегов — по рубрикам. */
+    /**
+     * Подбирает похожие статьи сначала по тегам, а при отсутствии тегов — по рубрикам.
+     * @param array $post Статья с ключами `id`, `tags` и `categories`.
+     * @return list<array> Не более трёх похожих статей.
+     * @throws \PDOException При ошибке запроса.
+     */
     public function similarPosts(array $post): array
     {
         if ($post['tags']) {

@@ -7,12 +7,15 @@ namespace App\Infrastructure;
 /** Загружает и сохраняет локальные параметры подключения к базе данных. */
 final class ConfigRepository
 {
+    /** @param string $path Абсолютный путь к PHP-файлу конфигурации. */
     public function __construct(private readonly string $path)
     {
     }
 
-    /** Возвращает настройки из config.php; при отсутствии или ошибке отдаёт пустой массив. */
-    // смотрим конфиг если он есть
+    /**
+     * Загружает настройки подключения из PHP-файла.
+     * @return array<string,mixed> Настройки либо пустой массив, если файл отсутствует, пуст или вернул не массив.
+     */
     public function load(): array
     {
         if (!is_file($this->path) || filesize($this->path) === 0) {
@@ -27,8 +30,12 @@ final class ConfigRepository
         }
     }
 
-    /** Записывает настройки в PHP-файл, который не должен попадать в Git. */
-    // Сохраняем настройки подключения в config.php.
+    /**
+     * Сохраняет настройки как PHP-массив с блокировкой записи.
+     * @param array<string,mixed> $config Параметры подключения.
+     * @return void
+     * @throws \RuntimeException Если не удалось записать файл.
+     */
     public function save(array $config): void
     {
         $contents = "<?php\n// Параметры подключения к базе данных.\nreturn " . var_export($config, true) . ";\n";

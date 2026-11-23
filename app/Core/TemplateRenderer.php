@@ -6,12 +6,17 @@ namespace App\Core;
 
 use Smarty\Smarty;
 
-/** Настраиваем Smarty и передаёи данные в шаблоны для вывода страниц. */
+/** Настраивает Smarty и отображает шаблоны сайта. */
 final class TemplateRenderer
 {
     private Smarty $smarty;
 
-    /** Создаем каталоги для кеша и скомпилированных шаблонов */
+    /**
+     * Настраивает каталоги шаблонов и создаёт директории хранения Smarty при необходимости.
+     * @param string $templateDirectory Путь к исходным Smarty-шаблонам.
+     * @param string $storageDirectory Корневой каталог кеша и скомпилированных шаблонов.
+     * @throws \RuntimeException Если каталоги хранилища создать не удалось.
+     */
     public function __construct(string $templateDirectory, string $storageDirectory)
     {
         foreach ([$storageDirectory . '/compiled', $storageDirectory . '/cache'] as $directory) {
@@ -27,7 +32,13 @@ final class TemplateRenderer
         $this->smarty->escape_html = true;
     }
 
-    /** Передаёт переменные в Smarty и отображает указанный файл шаблона. */
+    /**
+     * Передаёт данные шаблону и выводит его.
+     * @param string $template Имя шаблона относительно каталога шаблонов.
+     * @param array<string,mixed> $data Данные, доступные в шаблоне.
+     * @return void
+     * @throws \Smarty\Exception Если Smarty не может обработать шаблон.
+     */
     public function render(string $template, array $data = []): void
     {
         foreach ($data as $key => $value) {

@@ -9,11 +9,21 @@ use PDO;
 /** Загружает для главной страницы рубрики и последние статьи из базы. */
 final class HomeRepository
 {
+    /**
+     * Создаёт репозиторий главной страницы.
+     *
+     * @param PDO $pdo Соединение с базой данных.
+     */
     public function __construct(private readonly PDO $pdo)
     {
     }
 
-    /** берем 3 свежих новостей. */
+    /**
+     * Возвращает рубрики, в которых есть записи, и три последние статьи каждой.
+     *
+     * @return list<array{id:int|string,name:string,slug:string,description:string,posts:list<array>}> Рубрики с вложенными статьями.
+     * @throws \PDOException Если запрос к базе данных завершился ошибкой.
+     */
     public function sections(): array
     {
         $categories = $this->pdo->query(

@@ -9,11 +9,22 @@ use PDO;
 /** Получает рубрику и её статьи с заданной сортировкой и пагинацией. */
 final class CategoryRepository
 {
+    /**
+     * Создаёт репозиторий рубрик.
+     *
+     * @param PDO $pdo Соединение с базой данных.
+     */
     public function __construct(private readonly PDO $pdo)
     {
     }
 
-    /** Ищет рубрику по адресу в URL. */
+    /**
+     * Находит рубрику по slug.
+     *
+     * @param string $slug Адресный идентификатор рубрики.
+     * @return array{id:int|string,name:string,slug:string,description:string}|null Данные рубрики либо null.
+     * @throws \PDOException Если запрос к базе данных завершился ошибкой.
+     */
     public function findBySlug(string $slug): ?array
     {
         $query = $this->pdo->prepare(
@@ -27,7 +38,13 @@ final class CategoryRepository
         return $query->fetch() ?: null;
     }
 
-    /** Считает статьи, относящиеся к рубрике. */
+    /**
+     * Считает связи статей с указанной рубрикой.
+     *
+     * @param int $categoryId Идентификатор рубрики.
+     * @return int Количество связанных статей.
+     * @throws \PDOException Если запрос к базе данных завершился ошибкой.
+     */
     public function countPosts(int $categoryId): int
     {
         $query = $this->pdo->prepare(
@@ -40,7 +57,16 @@ final class CategoryRepository
         return (int) $query->fetchColumn();
     }
 
-    /** Возвращает одну страницу статей; популярные сортируются с учётом даты при равных просмотрах. */
+    /**
+     * Возвращает страницу статей рубрики с выбранной сортировкой.
+     *
+     * @param int $categoryId Идентификатор рубрики.
+     * @param string $sort Порядок: `views` или дата публикации по убыванию.
+     * @param int $limit Максимум статей в результате.
+     * @param int $offset Число пропускаемых статей.
+     * @return list<array> Статьи; при равном числе просмотров выше ставится более свежая.
+     * @throws \PDOException Если запрос к базе данных завершился ошибкой.
+     */
     public function posts(int $categoryId, string $sort, int $limit, int $offset): array
     {
         $orderBy = $sort === 'views'

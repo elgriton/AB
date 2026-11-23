@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-// Точка входа: проверяет базу и передаёт запрос общему контроллеру страниц.
+/**
+ * Точка входа сайта: проверяет конфигурацию и базу данных,
+ * а затем передаёт запрос контроллеру блога.
+ */
 use App\Controller\BlogController;
 use App\Controller\SetupController;
 use App\Core\Database;
@@ -20,20 +23,20 @@ $templates = new TemplateRenderer(__DIR__ . '/templates', __DIR__ . '/storage/sm
 $installer = new Installer(new SchemaManager(), new DatabaseSeeder());
 $setupController = new SetupController($templates, $configRepository, $installer);
 
-// Обрабатываем форму создания базы данных.
+/** Обрабатываем отправленную форму установки базы данных. */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install_database'])) {
     $setupController->process($_POST);
     exit;
 }
 
-// смотрим конфиг если он есть
+/** Загружаем локальные параметры подключения, если они настроены. */
 $config = $configRepository->load();
 if (!isset($config['host'], $config['port'], $config['database'], $config['username'], $config['password'])) {
     $setupController->show();
     exit;
 }
 
-// Проверяем подключение, таблицы и начальные записи.
+/** Проверяем соединение, наличие схемы и начальных записей. */
 try {
     $pdo = Database::connect($config);
     $installer->ensureInstalled($pdo);

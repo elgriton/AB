@@ -5,10 +5,16 @@ declare(strict_types=1);
 namespace App\Infrastructure;
 
 use PDO;
-/** Создаём таблицы и связи между постами, рубриками и тегами. Индексируем по дате, просмотрам, слагам */
-
+/** Создаёт таблицы блога, связи и индексы в подключённой базе данных. */
 final class SchemaManager
 {
+    /**
+     * Создаёт таблицы, если они ещё не существуют.
+     *
+     * @param PDO $pdo Соединение с целевой базой данных.
+     * @return void
+     * @throws \PDOException Если MySQL отклонит один из SQL-запросов.
+     */
     public function create(PDO $pdo): void
     {
         $statements = [

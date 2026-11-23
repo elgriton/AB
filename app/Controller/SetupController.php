@@ -12,6 +12,12 @@ use App\Infrastructure\Installer;
 /** Показывает форму настройки и выполняет первоначальное создание базы. */
 final class SetupController
 {
+    /**
+     * Создаёт контроллер первичной настройки базы данных.
+     * @param TemplateRenderer $templates Рендерер страницы настройки.
+     * @param ConfigRepository $configs Хранилище параметров подключения.
+     * @param Installer $installer Установщик схемы и начальных данных.
+     */
     public function __construct(
         private readonly TemplateRenderer $templates,
         private readonly ConfigRepository $configs,
@@ -19,10 +25,14 @@ final class SetupController
     ) {
     }
 
-    /** Показывает форму с сохранёнными или стандартными параметрами. */
+    /**
+     * Выводит форму настройки с сохранёнными или стандартными значениями.
+     * @param string $error Сообщение об ошибке для показа пользователю.
+     * @param array<string,mixed> $values Значения полей, введённые в форме.
+     * @return void
+     */
     public function show(string $error = '', array $values = []): void
     {
-        // дефолтное подключение
         $saved = $this->configs->load();
         $defaults = [
             'host' => $saved['host'] ?? '127.0.0.1',
@@ -39,7 +49,12 @@ final class SetupController
         ]);
     }
 
-    /** Проверяет параметры, создаёт базу, таблицы и начальные записи. */
+    /**
+     * Валидирует POST-данные, устанавливает базу и сохраняет конфигурацию.
+     * При ошибке возвращает пользователя к форме; при успехе отправляет redirect и завершает запрос.
+     * @param array<string,mixed> $input Данные отправленной формы.
+     * @return void
+     */
     public function process(array $input): void
     {
         $settings = [
@@ -50,11 +65,11 @@ final class SetupController
             'password' => (string) ($input['password'] ?? ''),
         ];
 
-        $validation = !preg_match('/^[a-zA-Z0-9.:-]+$/', $settings['host']) // имя
-            || !ctype_digit($settings['port']) // числа
+        $validation = !preg_match('/^[a-zA-Z0-9.:-]+$/', $settings['host'])
+            || !ctype_digit($settings['port'])
             || (int) $settings['port'] < 1
-            || (int) $settings['port'] > 65535 // на дурака
-            || !preg_match('/^[a-zA-Z0-9_]+$/', $settings['database']) // база
+            || (int) $settings['port'] > 65535
+            || !preg_match('/^[a-zA-Z0-9_]+$/', $settings['database'])
             || $settings['username'] === '';
 
         if ($validation) {
@@ -67,7 +82,6 @@ final class SetupController
 
         $settings['port'] = (int) $settings['port'];
 
-        // создаем базу.
         try {
             $server = Database::connect($settings, false);
             $server->exec(
