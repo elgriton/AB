@@ -9,6 +9,7 @@ use App\Infrastructure\ConfigRepository;
 require __DIR__ . '/vendor/autoload.php';
 
 header('Content-Type: application/xml; charset=utf-8');
+header('X-Robots-Tag: noindex, nofollow, noarchive', true);
 
 try {
     $config = (new ConfigRepository(__DIR__ . '/config.php'))->load();

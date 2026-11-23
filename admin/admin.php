@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+header('X-Robots-Tag: noindex, nofollow, noarchive', true);
+
 /** Локальная административная страница управления статьями и рубриками. */
 
 session_set_cookie_params([

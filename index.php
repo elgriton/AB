@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+header('X-Robots-Tag: noindex, nofollow, noarchive', true);
+
 /**
  * Точка входа сайта: проверяет конфигурацию и базу данных,
  * а затем передаёт запрос контроллеру блога.

@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow, noarchive">
     <meta name="description" content="{$metaDescription|default:'Pinch of Flavor recipes'|escape:'html'}">
 
     <title>{$metaTitle|default:$title|escape:'html'} — Pinch of Flavor</title>
