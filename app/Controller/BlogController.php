@@ -175,10 +175,10 @@ final class BlogController
     private function safeImageUrl(string $image): string
     {
         $image = trim($image);
-        if (preg_match('#^https?://#i', $image) || (str_starts_with($image, '/') && !str_starts_with($image, '//')) || preg_match('#^assets/(?!.*\.\.)[a-zA-Z0-9_./-]+$', $image)) {
+        if (!empty($image) && (preg_match('#^https?://#i', $image) || (str_starts_with($image, '/') && !str_starts_with($image, '//')) || preg_match('#^assets/(?!.*\.\.)[a-zA-Z0-9_./-]+$', $image) )) {
             return $image;
         }
-        return '';
+        return '/assets/images/recipe-placeholder.svg';
     }
 
     /** Собирает абсолютный адрес страницы для canonical и Open Graph. */
