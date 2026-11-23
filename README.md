@@ -10,7 +10,7 @@
 
 AI-агенты использовались:  
 Figma — разработка макета (pre/design_figma.png)  
-Админка - для удобства тестирования (admin/admin.php)  
+Codex — Админка для удобства тестирования (admin/admin.php)  
 Codex — выполнение задач из AGENTS.md, написание README.md, PHPDoc
 
 ## Требования
