@@ -15,8 +15,8 @@
     <meta property="og:site_name" content="Pinch of Flavor">
     {if $ogImageUrl}<meta property="og:image" content="{$ogImageUrl|escape:'html'}">{/if}
     <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="/assets/css/site.css?v=food-final-20261120b">
-    <link rel="stylesheet" href="/assets/css/site-desktop.css?v=food-final-20261120b" media="(min-width: 581px)">
+    <link rel="stylesheet" href="/assets/css/site.css?v=scss-20261124">
+    <link rel="stylesheet" href="/assets/css/site-desktop.css?v=scss-20261124" media="(min-width: 581px)">
 </head>
 <body>
     <header class="site-header">

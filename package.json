@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "sass": "^1.108.2"
+  },
+  "scripts": {
+    "scss:build": "sass assets/scss:assets/css --style=expanded --no-source-map",
+    "scss:watch": "sass --watch assets/scss:assets/css --style=expanded --no-source-map"
+  }
+}

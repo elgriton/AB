@@ -6,4 +6,4 @@
 /storage/logs/*
 *.log
 /error_log
-README.md
+/node_modules/
