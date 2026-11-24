@@ -6,3 +6,5 @@
 /storage/logs/*
 *.log
 /error_log
+
+/node_modules/
